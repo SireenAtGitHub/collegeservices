@@ -3,6 +3,11 @@ from rest_framework.status import *
 
 
 SEMESTER_DATA_RETRIEVED = "Semester data retrieved successfully."
+SUBJECT_DATA_RETRIEVED = "Subject data retrieved successfully."
+SUBJECT_NOT_FOUND = "We couldn't locate the subject '{0}' you requested."
+SUBJECT_CREATED = "Subject created successfully."
+SUBJECT_UPDATED = "Subject updated successfully."
+NON_INT_FIELD = ["A valid integer is required."]
 
 
 class ResponseHelper:
@@ -16,3 +21,13 @@ class ResponseHelper:
             "errors": errors,
         }
         return Response(response, status=status)
+
+
+class ValidationHelper:
+    def validate_int(self, value, field="id"):
+        if not str(value).isdigit():
+            return ResponseHelper.response(
+                self,
+                errors={field: NON_INT_FIELD},
+                status=HTTP_400_BAD_REQUEST,
+            )
