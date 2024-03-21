@@ -1,3 +1,7 @@
+from .models import Semester, Subject
 from django.contrib import admin
 
-# Register your models here.
+
+@admin.register(Semester)
+class SemesterAdmin(admin.ModelAdmin):
+    list_display = ["id", "name"]
