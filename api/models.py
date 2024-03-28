@@ -17,7 +17,9 @@ class Student(models.Model):
 
 class Subject(models.Model):
     name = models.CharField(max_length=100, validators=[MinLengthValidator(5)])
-    code = models.CharField(max_length=10, unique=True)
+    code = models.CharField(
+        max_length=10, unique=True, validators=[MinLengthValidator(5)]
+    )
     semester = models.ForeignKey(
         Semester, on_delete=models.DO_NOTHING, related_name="subjects"
     )
