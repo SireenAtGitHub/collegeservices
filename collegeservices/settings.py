@@ -21,16 +21,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = (os.environ.get('DEBUG_VALUE') == 'True')
+DEBUG = os.environ.get("DEBUG_VALUE") == "True"
 
-print("******************************************")
-print(bool(os.getenv("DEBUG_VALUE")))
-print("******************************************")
-
-ALLOWED_HOSTS = ["*"]
+if os.environ.get("DEBUG_VALUE") == "True":
+    ALLOWED_HOSTS = ["127.0.0.1"]
+else:
+    ALLOWED_HOSTS = ["collegeservices.pythonanywhere.com"]
 
 
 # Application definition
@@ -79,27 +78,15 @@ WSGI_APPLICATION = "collegeservices.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-if bool(os.getenv("DEBUG_VALUE")):
+if os.environ.get("DEBUG_VALUE") == "True":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": "collegeservices$default",
-            "USER": "collegeservices",
-            "PASSWORD": "Pass4Database",
-            "HOST": "collegeservices.mysql.pythonanywhere-services.com",
-            "PORT": "3306",
-            "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
-        }
-    }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": "college",
-            "USER": "root",
-            "PASSWORD": "",
-            "HOST": "localhost",
-            "PORT": "3306",
+            "NAME": os.getenv("NAME", "college"),
+            "USER": os.getenv("USER", "root"),
+            "PASSWORD": os.getenv("PASSWORD", ""),
+            "HOST": os.getenv("HOST", "localhost"),
+            "PORT": os.getenv("PORT", "3306"),
             "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
         }
     }
