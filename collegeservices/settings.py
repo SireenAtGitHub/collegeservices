@@ -82,11 +82,11 @@ if os.environ.get("DEBUG_VALUE") == "True":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("NAME", "college"),
-            "USER": os.getenv("USER", "root"),
-            "PASSWORD": os.getenv("PASSWORD", ""),
-            "HOST": os.getenv("HOST", "localhost"),
-            "PORT": os.getenv("PORT", "3306"),
+            "NAME": os.environ.get("NAME", "college"),
+            "USER": os.environ.get("USER", "root"),
+            "PASSWORD": os.environ.get("PASSWORD", ""),
+            "HOST": os.environ.get("HOST", "localhost"),
+            "PORT": os.environ.get("PORT", "3306"),
             "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
         }
     }
