@@ -77,14 +77,16 @@ WSGI_APPLICATION = "collegeservices.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 if bool(os.getenv("DEBUG_VALUE")):
     DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": os.getenv("NAME", "college"),
-            "USER": os.getenv("USER", "root"),
-            "PASSWORD": os.getenv("PASSWORD", ""),
-            "HOST": os.getenv("HOST", "localhost"),
-            "PORT": os.getenv("PORT", "3306"),
-            "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "collegeservices$default",
+        "USER": "collegeservices",
+        "PASSWORD": "Pass4Database",
+        "HOST": "collegeservices.mysql.pythonanywhere-services.com",
+        "PORT": "3306",
+	    "OPTIONS": {
+	            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'"
+	        }
         }
     }
 else:
