@@ -26,7 +26,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost', 'collegeservices.pythonanywhere.com'
+]
 
 
 # Application definition
@@ -79,11 +81,11 @@ WSGI_APPLICATION = "collegeservices.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "college",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": "localhost",
-        "PORT": "3306",
+        "NAME": os.getenv("NAME", "college"),
+        "USER": os.getenv("USER", "root"),
+        "PASSWORD": os.getenv("PASSWORD", ""),
+        "HOST": os.getenv("HOST", "localhost"),
+        "PORT": os.getenv("PORT", "3306"),
     }
 }
 
