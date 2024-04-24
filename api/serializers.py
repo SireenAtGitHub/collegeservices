@@ -42,3 +42,9 @@ class SemesterSubjectSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = Semester
         fields = ["id", "name", "subjects"]
+
+
+class TeacherLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "password"]

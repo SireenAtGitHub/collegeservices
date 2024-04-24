@@ -8,6 +8,11 @@ SUBJECT_NOT_FOUND = "We couldn't locate the subject '{0}' you requested."
 SUBJECT_CREATED = "Subject created successfully."
 SUBJECT_UPDATED = "Subject updated successfully."
 NON_INT_FIELD = ["A valid integer is required."]
+TEACHER_NOT_FOUND = "Teacher Not Found"
+TEACHER_NOT_FOUND_MESSAGE = (
+    "The email ID you provided does not correspond to an existing user in our system."
+)
+TEACHER_LOGIN_MESSAGE = "Teacher session initiated."
 
 
 class ResponseHelper:
