@@ -2,8 +2,22 @@ from rest_framework.generics import GenericAPIView
 from .models import *
 from .serializers import *
 from .helpers import *
+from rest_framework.parsers import FormParser
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 
 ALL_SEMESTERS = Semester.objects.all().values_list("id", flat=True)
+
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+
+    return {
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
+    }
 
 
 class SemesterView(GenericAPIView, ResponseHelper):
@@ -33,6 +47,8 @@ class SemesterView(GenericAPIView, ResponseHelper):
 
 
 class SubjectView(GenericAPIView, ResponseHelper, ValidationHelper):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         if "code" not in request.query_params:
             objects = Subject.objects.all()
@@ -87,3 +103,25 @@ class SubjectView(GenericAPIView, ResponseHelper, ValidationHelper):
         return self.response(
             errors=SUBJECT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
         )
+
+
+class TeacherLoginView(GenericAPIView, ResponseHelper):
+    parser_classes = [FormParser]
+
+    def post(self, request):
+        serializer = TeacherLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = request.data.get("email")
+            password = request.data.get("password")
+            user = authenticate(username=email, password=password)
+            if user:
+                token_data = get_tokens_for_user(user=user)
+                return self.response(data=token_data, message=TEACHER_LOGIN_MESSAGE)
+            else:
+                return self.response(
+                    errors=TEACHER_NOT_FOUND,
+                    message=TEACHER_NOT_FOUND_MESSAGE,
+                    status=HTTP_404_NOT_FOUND,
+                )
+        else:
+            return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
