@@ -23,6 +23,7 @@ SEMESTER_UPDATED = "Semester updated for given student(s)."
 STUDENT_DELETED = "Student(s) deleted successfully."
 STUDENT_LIST_RETRIEVED = "List of students retieved successfully."
 STUDENT_NOT_FOUND = "Student with Id {0} not found."
+SEMESTER_NOT_FOUND = "Semester with Id {0} not found."
 SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
 
 

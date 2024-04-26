@@ -184,16 +184,26 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
             if response:
                 return response
             try:
+                semester_serializer = SemesterSerializer(data={"id": id, "name": "string"})
+                semester_serializer.is_valid()
+                semester = Semester.objects.get(id=id)
                 students = Student.objects.filter(semester=id)
                 serializer = StudentSerializer(students, many=True)
+                count = len(serializer.data)
+                semester = {"id": int(id), "name": semester.name}
+                for student in serializer.data:
+                    semester = student.pop("semester")
+                semester["count"] = count
+                semester["students"] = serializer.data
                 return self.response(
-                    data={"count": len(serializer.data), "students": serializer.data},
-                    message=STUDENT_RETRIEVED,
+                    data={"semester": semester},
+                    message=STUDENT_LIST_RETRIEVED,
                 )
-            except Student.DoesNotExist:
+            except Semester.DoesNotExist:
                 return self.response(
-                    message=SEMESTER_STUDENT_NOT_FOUND.format(id),
-                    status=HTTP_404_NOT_FOUND,
+                    message={"available_semester": ALL_SEMESTERS},
+                    status=HTTP_400_BAD_REQUEST,
+                    errors=semester_serializer.errors,
                 )
 
     def post(self, request):
