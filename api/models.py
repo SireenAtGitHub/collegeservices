@@ -15,7 +15,7 @@ class Semester(models.Model):
 class Student(models.Model):
     name = models.CharField(max_length=30)
     email = models.EmailField()
-    semester = models.ForeignKey(Semester, on_delete=models.DO_NOTHING, default=None)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, default=None)
 
 
 class Subject(models.Model):
