@@ -8,8 +8,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import filters
 
-ALL_SEMESTERS = Semester.objects.all().values_list("id", flat=True)
-
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -29,17 +27,18 @@ class SemesterView(GenericAPIView, ResponseHelper):
             if semester_serializer.is_valid():
                 obj = Semester.objects.get(id=id)
                 serializer = SemesterSubjectSerilaizer(obj)
+                for subject in serializer.data.get("subjects", []):
+                    subject.pop("semester")
                 return self.response(
                     data={"semester": serializer.data}, message=SEMESTER_DATA_RETRIEVED
                 )
-            return self.response(
-                errors=semester_serializer.errors,
-                message={"available_semesters": ALL_SEMESTERS},
-                status=HTTP_404_NOT_FOUND,
-            )
+            return self.semester_not_available(semester_serializer.errors)
         else:
             objects = Semester.objects.all()
             serializer = SemesterSubjectSerilaizer(objects, many=True)
+            for semester in serializer.data:
+                for subject in semester.get("subjects", []):
+                    subject.pop("semester")
             return self.response(
                 data={"count": len(serializer.data), "semesters": serializer.data},
                 message=SEMESTER_DATA_RETRIEVED,
@@ -78,11 +77,7 @@ class SubjectView(GenericAPIView, ResponseHelper, ValidationHelper):
                 message=SUBJECT_CREATED, data=serializer.data, status=HTTP_201_CREATED
             )
         else:
-            return self.response(
-                errors=serializer.errors,
-                message={"available_semesters": ALL_SEMESTERS},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            return self.semester_not_available(errors=serializer.errors)
 
     def patch(self, request):
         id = request.data.get("id")
@@ -184,7 +179,9 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
             if response:
                 return response
             try:
-                semester_serializer = SemesterSerializer(data={"id": id, "name": "string"})
+                semester_serializer = SemesterSerializer(
+                    data={"id": id, "name": "string"}
+                )
                 semester_serializer.is_valid()
                 semester = Semester.objects.get(id=id)
                 students = Student.objects.filter(semester=id)
@@ -200,11 +197,7 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
                     message=STUDENT_LIST_RETRIEVED,
                 )
             except Semester.DoesNotExist:
-                return self.response(
-                    message={"available_semester": ALL_SEMESTERS},
-                    status=HTTP_400_BAD_REQUEST,
-                    errors=semester_serializer.errors,
-                )
+                return self.semester_not_available(semester_serializer.errors)
 
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
@@ -214,12 +207,7 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
                 message=STUDENT_CREATED, data=serializer.data, status=HTTP_201_CREATED
             )
         else:
-            semesters = ALL_SEMESTERS
-            return self.response(
-                errors=serializer.errors,
-                message={"available_semester": semesters},
-                status=HTTP_400_BAD_REQUEST,
-            )
+            return self.semester_not_available(serializer.errors)
 
     def delete(self, request):
         data = request.data
@@ -250,10 +238,5 @@ class StudentSemesterView(GenericAPIView, ResponseHelper):
         error = serializer.errors.get("id")
         if error is not None:
             if error[0] == f""""{semester_id}" is not a valid choice.""":
-                semesters = ALL_SEMESTERS
-                return self.response(
-                    errors=serializer.errors,
-                    message={"available_semester": semesters},
-                    status=HTTP_400_BAD_REQUEST,
-                )
+                return self.semester_not_available(serializer.errors)
         return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)

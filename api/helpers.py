@@ -1,6 +1,9 @@
 from rest_framework.response import Response
 from rest_framework.status import *
-from .models import Student
+from .models import Student, Semester
+
+
+ALL_SEMESTERS = Semester.objects.all().values_list("id", flat=True)
 
 
 SEMESTER_DATA_RETRIEVED = "Semester data retrieved successfully."
@@ -38,6 +41,13 @@ class ResponseHelper:
             "errors": errors,
         }
         return Response(response, status=status)
+
+    def semester_not_available(self, errors):
+        return self.response(
+            errors=errors,
+            message={"available_semesters": ALL_SEMESTERS},
+            status=HTTP_404_NOT_FOUND,
+        )
 
 
 class ValidationHelper:
