@@ -12,7 +12,7 @@ SUBJECT_NOT_FOUND = "We couldn't locate the subject '{0}' you requested."
 SUBJECT_CREATED = "Subject created successfully."
 SUBJECT_UPDATED = "Subject updated successfully."
 NON_INT_FIELD = ["A valid integer is required."]
-TEACHER_NOT_FOUND = "Teacher Not Found"
+TEACHER_NOT_FOUND = "Teacher not found."
 TEACHER_NOT_FOUND_MESSAGE = (
     "The email ID you provided does not correspond to an existing user in our system."
 )
@@ -32,7 +32,7 @@ SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
 
 class ResponseHelper:
     def response(
-        self, message=None, data=None, errors=None, status=HTTP_200_OK
+        self=None, message=None, data=None, errors=None, status=HTTP_200_OK
     ) -> Response:
         response = {
             "status": status,
