@@ -2,6 +2,11 @@ from rest_framework import serializers
 from .models import *
 from .helpers import ValidationHelper
 
+class TeacherLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "password"]
+        extra_kwargs = {'password': {'read_only': True}}
 
 class SemesterSerializer(serializers.Serializer):
     id = serializers.ChoiceField(
@@ -43,13 +48,6 @@ class SemesterSubjectSerilaizer(serializers.ModelSerializer):
     class Meta:
         model = Semester
         fields = ["id", "name", "subjects"]
-
-
-class TeacherLoginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["email", "password"]
-
 
 class StudentSerializer(serializers.ModelSerializer):
     semester = SemesterSerializer()

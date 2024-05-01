@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import filters
+from rest_framework.decorators import api_view
 
 
 def get_tokens_for_user(user):
@@ -16,6 +17,48 @@ def get_tokens_for_user(user):
         "refresh": str(refresh),
         "access": str(refresh.access_token),
     }
+
+
+class TeacherLoginView(GenericAPIView, ResponseHelper):
+    parser_classes = [FormParser]
+
+    def post(self, request):
+        serializer = TeacherLoginSerializer(data=request.data)
+        if serializer.is_valid():
+            email = request.data.get("email")
+            password = request.data.get("password")
+            user = authenticate(username=email, password=password)
+            if user:
+                token_data = get_tokens_for_user(user=user)
+                return self.response(data=token_data, message=TEACHER_LOGIN_MESSAGE)
+            else:
+                return self.response(
+                    errors=TEACHER_NOT_FOUND,
+                    message=TEACHER_NOT_FOUND_MESSAGE,
+                    status=HTTP_404_NOT_FOUND,
+                )
+        else:
+            return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+@api_view(["POST"])
+def teacher_exists(request):
+    serializer = TeacherLoginSerializer(data=request.data)
+    if serializer.is_valid():
+        try:
+            User.objects.get(username=request.data["email"])
+            return ResponseHelper.response(data={"exists": True})
+        except User.DoesNotExist:
+            return ResponseHelper.response(
+                data={"exists": False},
+                errors=TEACHER_NOT_FOUND,
+                message=TEACHER_NOT_FOUND_MESSAGE,
+                status=HTTP_404_NOT_FOUND,
+            )
+    else:
+        return ResponseHelper.response(
+            errors=serializer.errors, status=HTTP_400_BAD_REQUEST
+        )
 
 
 class SemesterView(GenericAPIView, ResponseHelper):
@@ -98,28 +141,6 @@ class SubjectView(GenericAPIView, ResponseHelper, ValidationHelper):
         return self.response(
             errors=SUBJECT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
         )
-
-
-class TeacherLoginView(GenericAPIView, ResponseHelper):
-    parser_classes = [FormParser]
-
-    def post(self, request):
-        serializer = TeacherLoginSerializer(data=request.data)
-        if serializer.is_valid():
-            email = request.data.get("email")
-            password = request.data.get("password")
-            user = authenticate(username=email, password=password)
-            if user:
-                token_data = get_tokens_for_user(user=user)
-                return self.response(data=token_data, message=TEACHER_LOGIN_MESSAGE)
-            else:
-                return self.response(
-                    errors=TEACHER_NOT_FOUND,
-                    message=TEACHER_NOT_FOUND_MESSAGE,
-                    status=HTTP_404_NOT_FOUND,
-                )
-        else:
-            return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
 class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
