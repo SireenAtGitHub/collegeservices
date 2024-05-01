@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Semester(models.Model):
@@ -12,7 +15,7 @@ class Semester(models.Model):
 class Student(models.Model):
     name = models.CharField(max_length=30)
     email = models.EmailField()
-    semester = models.ForeignKey(Semester, on_delete=models.DO_NOTHING, default=None)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, default=None)
 
 
 class Subject(models.Model):
@@ -23,3 +26,6 @@ class Subject(models.Model):
     semester = models.ForeignKey(
         Semester, on_delete=models.DO_NOTHING, related_name="subjects"
     )
+
+    def __str__(self) -> str:
+        return self.name
