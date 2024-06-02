@@ -28,6 +28,7 @@ STUDENT_LIST_RETRIEVED = "List of students retieved successfully."
 STUDENT_NOT_FOUND = "Student with Id {0} not found."
 SEMESTER_NOT_FOUND = "Semester with Id {0} not found."
 SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
+STUDENT_MARKS_UPDATED = "Marks updated successfully for given student(s)."
 
 
 class ResponseHelper:
