@@ -29,3 +29,9 @@ class Subject(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class Marks(models.Model):
+    marks = models.PositiveIntegerField()
+    student = models.ForeignKey(Student, on_delete=models.DO_NOTHING)
+    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING)
