@@ -86,3 +86,32 @@ class StudentSemesterSerializer(serializers.Serializer, ValidationHelper):
         if invalid_students:
             raise serializers.ValidationError({"not_found": invalid_students})
         return value
+
+class MarksSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=True)
+    marks = serializers.IntegerField(required=True)
+
+class StudentMarksSerializer(serializers.Serializer, ValidationHelper):
+    subject = serializers.ChoiceField(
+        choices=Subject.objects.all().values_list("code", flat=True), required=True
+    )
+    students = serializers.ListSerializer(child=MarksSerializer(), min_length=1)
+
+    def validate_students(self, value):
+        students = [ sub['id'] for sub in value ]
+        invalid_students = self.verify_students(students)
+        if invalid_students:
+            raise serializers.ValidationError({"not_found": invalid_students})
+        return value
+    
+    def create(self, validated_data):
+        subject = Subject.objects.get(code=validated_data["subject"])
+        for student in validated_data["students"]:
+            try:
+                marks = Marks.objects.get(subject=subject.id, student=student["id"])
+                marks.marks = student["marks"]
+                marks.save()
+            except Marks.DoesNotExist:
+                marks = Marks.objects.create(subject_id=subject.id, marks=student["marks"], student_id=student["id"])
+                marks.save()
+        return object
