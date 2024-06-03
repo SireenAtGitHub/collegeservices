@@ -29,6 +29,8 @@ STUDENT_NOT_FOUND = "Student with Id {0} not found."
 SEMESTER_NOT_FOUND = "Semester with Id {0} not found."
 SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
 STUDENT_MARKS_UPDATED = "Marks updated successfully for given student(s)."
+SUBJECT_STUDENT_NOT_MATCHED = "One or more students have not been assigned the given subject."
+STUDENTS_NOT_FOUND = "One or more students are not present in the directory."
 
 
 class ResponseHelper:

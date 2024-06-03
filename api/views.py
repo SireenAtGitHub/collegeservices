@@ -262,6 +262,7 @@ class StudentSemesterView(GenericAPIView, ResponseHelper):
                 return self.semester_not_available(serializer.errors)
         return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+
 class StudentsMarksView(GenericAPIView, ResponseHelper):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -270,7 +271,10 @@ class StudentsMarksView(GenericAPIView, ResponseHelper):
         serializer = StudentMarksSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            students = [ sub['id'] for sub in serializer.validated_data["students"] ]
-            return_dict = {"subject": serializer.validated_data["subject"], "students":students}
+            students = [sub["id"] for sub in serializer.validated_data["students"]]
+            return_dict = {
+                "subject": serializer.validated_data["subject"],
+                "students": students,
+            }
             return self.response(data=return_dict, message=STUDENT_MARKS_UPDATED)
         return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)

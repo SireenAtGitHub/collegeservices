@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
-from .helpers import ValidationHelper
+from .helpers import *
+
 
 class TeacherLoginSerializer(serializers.ModelSerializer):
     class Meta:
@@ -71,7 +72,7 @@ class DeleteStudentsSerializer(serializers.Serializer, ValidationHelper):
     def validate_students(self, value):
         invalid_students = self.verify_students(value)
         if invalid_students:
-            raise serializers.ValidationError({"not_found": invalid_students})
+            raise serializers.ValidationError({"message": STUDENTS_NOT_FOUND, "students":invalid_students})
         return value
 
 
@@ -84,7 +85,7 @@ class StudentSemesterSerializer(serializers.Serializer, ValidationHelper):
     def validate_students(self, value):
         invalid_students = self.verify_students(value)
         if invalid_students:
-            raise serializers.ValidationError({"not_found": invalid_students})
+            raise serializers.ValidationError({"message": STUDENTS_NOT_FOUND, "students":invalid_students})
         return value
 
 class MarksSerializer(serializers.Serializer):
@@ -97,13 +98,21 @@ class StudentMarksSerializer(serializers.Serializer, ValidationHelper):
     )
     students = serializers.ListSerializer(child=MarksSerializer(), min_length=1)
 
-    def validate_students(self, value):
-        students = [ sub['id'] for sub in value ]
+    def validate(self, data):
+        students = [ sub['id'] for sub in data["students"] ]
         invalid_students = self.verify_students(students)
         if invalid_students:
-            raise serializers.ValidationError({"not_found": invalid_students})
-        return value
-    
+            raise serializers.ValidationError({"message": STUDENTS_NOT_FOUND, "students":invalid_students})
+        invalid_students = []
+        for student in data["students"]:
+            student_obj = Student.objects.get(id=student["id"])
+            subject_obj = Subject.objects.get(code=data["subject"])
+            if student_obj.semester_id != subject_obj.semester_id:
+                invalid_students.append(student["id"])
+        if invalid_students:
+            raise serializers.ValidationError({"message": SUBJECT_STUDENT_NOT_MATCHED, "students":invalid_students})
+        return data
+
     def create(self, validated_data):
         subject = Subject.objects.get(code=validated_data["subject"])
         for student in validated_data["students"]:
