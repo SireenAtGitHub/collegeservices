@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.status import *
-from .models import Student, Semester
+from .models import Student, Semester, Marks, Subject
 
 
 ALL_SEMESTERS = Semester.objects.all().values_list("id", flat=True)
@@ -29,8 +29,11 @@ STUDENT_NOT_FOUND = "Student with Id {0} not found."
 SEMESTER_NOT_FOUND = "Semester with Id {0} not found."
 SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
 STUDENT_MARKS_UPDATED = "Marks updated successfully for given student(s)."
-SUBJECT_STUDENT_NOT_MATCHED = "One or more students have not been assigned the given subject."
+SUBJECT_STUDENT_NOT_MATCHED = (
+    "One or more students have not been assigned the given subject."
+)
 STUDENTS_NOT_FOUND = "One or more students are not present in the directory."
+RESULTS_NOT_UPDATED = "Results are not updated for one or more student."
 
 
 class ResponseHelper:
@@ -51,6 +54,20 @@ class ResponseHelper:
             message={"available_semesters": ALL_SEMESTERS},
             status=HTTP_404_NOT_FOUND,
         )
+
+
+class ResponseGeneratorHelper:
+    def build_marksheet(self, student):
+        id = student.id
+        marks = {"id": int(id), "name": student.name, "marks": {}}
+        marks_objects = Marks.objects.filter(student_id=id)
+        subject_codes = Subject.objects.filter(semester_id=student.semester_id)
+        for subject in subject_codes:
+            marks["marks"][subject.code] = None
+            for marks_object in marks_objects:
+                if subject.semester_id == student.semester_id:
+                    marks["marks"][marks_object.subject.code] = marks_object.marks
+        return marks
 
 
 class ValidationHelper:
