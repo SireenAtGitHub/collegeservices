@@ -263,7 +263,9 @@ class StudentSemesterView(GenericAPIView, ResponseHelper):
         return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class StudentsMarksView(GenericAPIView, ResponseHelper, ValidationHelper, ResponseGeneratorHelper):
+class StudentsMarksView(
+    GenericAPIView, ResponseHelper, ValidationHelper, ResponseGeneratorHelper
+):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request):
@@ -305,9 +307,13 @@ class StudentsMarksView(GenericAPIView, ResponseHelper, ValidationHelper, Respon
                 return self.response(
                     errors=SUBJECT_NOT_FOUND.format(code), status=HTTP_404_NOT_FOUND
                 )
-            marks = Marks.objects.filter(subject_id=subject.id).order_by('student_id')
+            marks = Marks.objects.filter(subject_id=subject.id).order_by("student_id")
             for m in marks:
-                student = {"id":m.student_id, "name": m.student.name, "marks": {code:m.marks}}
+                student = {
+                    "id": m.student_id,
+                    "name": m.student.name,
+                    "marks": {code: m.marks},
+                }
                 return_data["students"].append(student)
         # Filter By Semester Id - "id" not present, "code" not present
         if "semester" in params and "id" not in params and "code" not in params:
@@ -319,5 +325,7 @@ class StudentsMarksView(GenericAPIView, ResponseHelper, ValidationHelper, Respon
             for student in students:
                 marks = self.build_marksheet(student)
                 return_data["students"].append(marks)
-        message = STUDENT_LIST_RETRIEVED if return_data["students"] else STUDENTS_NOT_FOUND
+        message = (
+            STUDENT_LIST_RETRIEVED if return_data["students"] else STUDENTS_NOT_FOUND
+        )
         return self.response(data=return_data, message=message)
