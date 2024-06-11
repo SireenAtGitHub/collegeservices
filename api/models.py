@@ -27,9 +27,7 @@ class Subject(models.Model):
     semester = models.ForeignKey(
         Semester, on_delete=models.DO_NOTHING, related_name="subjects"
     )
-    teacher = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, default=1
-    )
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
 
     def __str__(self) -> str:
         return self.name
