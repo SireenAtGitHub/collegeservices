@@ -13,4 +13,8 @@ class SemesterAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "code", "semester"]
+    list_display = ["id", "name", "code", "semester", "get_teacher"]
+
+    @admin.display(ordering="teacher__first_name", description="Teacher Name")
+    def get_teacher(self, obj):
+        return f"{obj.teacher.first_name} {obj.teacher.last_name}"
