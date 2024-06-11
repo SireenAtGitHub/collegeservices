@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()
 
@@ -26,6 +27,15 @@ class Subject(models.Model):
     semester = models.ForeignKey(
         Semester, on_delete=models.DO_NOTHING, related_name="subjects"
     )
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, default=1
+    )
 
     def __str__(self) -> str:
         return self.name
+
+
+class Marks(models.Model):
+    marks = models.PositiveIntegerField()
+    student = models.ForeignKey(Student, on_delete=models.DO_NOTHING)
+    subject = models.ForeignKey(Subject, on_delete=models.DO_NOTHING)

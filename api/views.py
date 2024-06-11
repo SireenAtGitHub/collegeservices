@@ -190,7 +190,7 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
                 )
             except Student.DoesNotExist:
                 return self.response(
-                    message=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
+                    errors=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
                 )
 
         # Fetch Student(s) with semester - 'id' not present, 'semester' present
@@ -261,3 +261,71 @@ class StudentSemesterView(GenericAPIView, ResponseHelper):
             if error[0] == f""""{semester_id}" is not a valid choice.""":
                 return self.semester_not_available(serializer.errors)
         return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+
+class StudentsMarksView(
+    GenericAPIView, ResponseHelper, ValidationHelper, ResponseGeneratorHelper
+):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def post(self, request):
+        data = request.data
+        serializer = StudentMarksSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            students = [sub["id"] for sub in serializer.validated_data["students"]]
+            return_dict = {
+                "subject": serializer.validated_data["subject"],
+                "students": students,
+            }
+            return self.response(data=return_dict, message=STUDENT_MARKS_UPDATED)
+        return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        params = request.query_params
+        # Filter Student by Student Id - "id" present, "semester" not present, "code" not present
+        return_data = {"students": []}
+        if "id" in params and "semester" not in params and "code" not in params:
+            id = params.get("id")
+            response = self.validate_int(id, "student")
+            if response:
+                return response
+            try:
+                student = Student.objects.get(id=id)
+            except Student.DoesNotExist:
+                return self.response(
+                    errors=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
+                )
+            marks = self.build_marksheet(student)
+            return_data["students"].append(marks)
+        # Filter By Subject Code - "id" not present, "semester" not present
+        if "code" in params and "id" not in params and "semester" not in params:
+            code = params.get("code")
+            try:
+                subject = Subject.objects.get(code=code)
+            except Subject.DoesNotExist:
+                return self.response(
+                    errors=SUBJECT_NOT_FOUND.format(code), status=HTTP_404_NOT_FOUND
+                )
+            marks = Marks.objects.filter(subject_id=subject.id).order_by("student_id")
+            for m in marks:
+                student = {
+                    "id": m.student_id,
+                    "name": m.student.name,
+                    "marks": {code: m.marks},
+                }
+                return_data["students"].append(student)
+        # Filter By Semester Id - "id" not present, "code" not present
+        if "semester" in params and "id" not in params and "code" not in params:
+            id = params.get("semester")
+            response = self.validate_int(id, "semester")
+            if response:
+                return response
+            students = Student.objects.filter(semester=id)
+            for student in students:
+                marks = self.build_marksheet(student)
+                return_data["students"].append(marks)
+        message = (
+            STUDENT_LIST_RETRIEVED if return_data["students"] else STUDENTS_NOT_FOUND
+        )
+        return self.response(data=return_data, message=message)
