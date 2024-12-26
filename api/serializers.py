@@ -15,6 +15,7 @@ class SemesterSerializer(serializers.Serializer):
         choices=Semester.objects.all().values_list("id", flat=True), required=True
     )
     name = serializers.CharField(max_length=100, required=False)
+    result_published = serializers.BooleanField(required=False)
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -22,7 +23,6 @@ class SubjectSerializer(serializers.ModelSerializer):
 
     teacher_first_name = serializers.ReadOnlyField(source="teacher.first_name")
     teacher_last_name = serializers.ReadOnlyField(source="teacher.last_name")
-
     class Meta:
         model = Subject
         fields = "__all__"
@@ -36,13 +36,11 @@ class SubjectSerializer(serializers.ModelSerializer):
         return subject
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
-        instance.code = validated_data.get("code", instance.code)
-        try:
-            semester_id = validated_data["semester"]["id"]
-            instance.semester = Semester.objects.get(id=semester_id)
-        except:
-            pass
+        for field, value in validated_data.items():
+            if value is not None and field != "semester":
+                setattr(instance, field, value)
+        if "semester" in validated_data and "id" in validated_data["semester"]:
+            instance.semester = Semester.objects.get(id=validated_data["semester"]["id"])
         instance.save()
         return instance
 
@@ -52,7 +50,7 @@ class SemesterSubjectSerilaizer(serializers.ModelSerializer):
 
     class Meta:
         model = Semester
-        fields = ["id", "name", "subjects"]
+        fields = "__all__"
 
 
 class StudentSerializer(serializers.ModelSerializer):
@@ -71,13 +69,11 @@ class StudentSerializer(serializers.ModelSerializer):
         return student
 
     def update(self, instance, validated_data):
-        instance.name = validated_data.get("name", instance.name)
-        instance.email = validated_data.get("email", instance.name)
-        try:
-            semester_id = validated_data["semester"]["id"]
-            instance.semester = Semester.objects.get(id=semester_id)
-        except:
-            pass
+        for field, value in validated_data.items():
+            if value is not None and field != "semester":
+                setattr(instance, field, value)
+        if "semester" in validated_data and "id" in validated_data["semester"]:
+            instance.semester = Semester.objects.get(id=validated_data["semester"]["id"])
         instance.save()
         return instance
 

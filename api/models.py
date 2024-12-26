@@ -8,6 +8,7 @@ User = get_user_model()
 
 class Semester(models.Model):
     name = models.CharField(max_length=50)
+    result_published = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
@@ -27,6 +28,7 @@ class Subject(models.Model):
     semester = models.ForeignKey(
         Semester, on_delete=models.DO_NOTHING, related_name="subjects"
     )
+    description = models.TextField(max_length=450, blank=True)
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING)
 
     def __str__(self) -> str:
