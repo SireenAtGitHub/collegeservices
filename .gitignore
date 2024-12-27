@@ -159,5 +159,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Custom files
+
 mig.ps1
 run.ps1
+perform_migartions.txt
+media/

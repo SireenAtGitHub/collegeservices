@@ -13,7 +13,7 @@ class SemesterAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "code", "semester", "get_teacher"]
+    list_display = ["id", "name", "code", "semester", "get_teacher", "image_icon"]
 
     @admin.display(ordering="teacher__first_name", description="Teacher Name")
     def get_teacher(self, obj):
