@@ -165,3 +165,4 @@ mig.ps1
 run.ps1
 perform_migartions.txt
 media/
+migrations/
