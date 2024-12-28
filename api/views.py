@@ -230,25 +230,6 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
         else:
             return self.semester_not_available(serializer.errors)
 
-    def patch(self, request):
-        id = request.data.get("id")
-        response = self.validate_int(id)
-        if response:
-            return response
-        try:
-            student = Student.objects.get(id=id)
-            serializer = StudentSerializer(
-                data=request.data, instance=student, partial=True
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return self.response(message=STUDENT_UPDATED, data=serializer.data)
-            return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
-        except Student.DoesNotExist:
-            return self.response(
-                errors=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
-            )
-
     def delete(self, request):
         data = request.data
         serializer = DeleteStudentsSerializer(data=data)
