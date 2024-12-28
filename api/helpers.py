@@ -24,7 +24,7 @@ STUDENT_CREATED = "Student created successfully."
 STUDENT_RETRIEVED = "Student retrieved successfully."
 SEMESTER_UPDATED = "Semester updated for given student(s)."
 STUDENT_DELETED = "Student(s) deleted successfully."
-STUDENT_LIST_RETRIEVED = "List of students retieved successfully."
+STUDENT_LIST_RETRIEVED = "List of students retrieved successfully."
 STUDENT_NOT_FOUND = "Student with Id {0} not found."
 SEMESTER_NOT_FOUND = "Semester with Id {0} not found."
 SEMESTER_STUDENT_NOT_FOUND = "Students with semester {0} not found."
@@ -34,6 +34,7 @@ SUBJECT_STUDENT_NOT_MATCHED = (
 )
 STUDENTS_NOT_FOUND = "One or more students are not present in the directory."
 RESULTS_NOT_UPDATED = "Results are not updated for one or more student."
+STUDENT_UPDATED = "Student updated successfully."
 
 
 class ResponseHelper:
