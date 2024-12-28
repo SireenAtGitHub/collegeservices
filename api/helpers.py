@@ -34,7 +34,6 @@ SUBJECT_STUDENT_NOT_MATCHED = (
 )
 STUDENTS_NOT_FOUND = "One or more students are not present in the directory."
 RESULTS_NOT_UPDATED = "Results are not updated for one or more student."
-STUDENT_UPDATED = "Student updated successfully."
 
 
 class ResponseHelper:
