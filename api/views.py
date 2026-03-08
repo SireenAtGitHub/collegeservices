@@ -150,93 +150,99 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
 
     def get(self, request):
         params = request.query_params
-        # Error Validation - 'id' present, 'semester' present, 'search' present
-        if len(params) > 1:
+        has_id = "id" in params
+        has_semester = "semester" in params
+        has_search = "search" in params
+
+        # Reject requests with more than one query param
+        if sum([has_id, has_semester, has_search]) > 1:
             return self.response(
                 status=HTTP_400_BAD_REQUEST,
                 message={"allowed_values": ["id", "semester", "search"]},
                 errors=SEND_EITHER_FIELD.format("id' or 'search", "semester"),
             )
 
-        # Fetch Student(s) with name or email - 'id' not present, 'semester' not present, 'search' present
-        if "search" in params and "id" not in params and "semester" not in params:
+        # Search by name or email
+        if has_search:
             students = self.filter_queryset(Student.objects.all())
             serializer = StudentSerializer(students, many=True)
             return self.response(
-                data={"count": len(serializer.data), "students": serializer.data},
+                data={"count": students.count(), "students": serializer.data},
                 message=STUDENT_LIST_RETRIEVED,
             )
 
-        # Fetch All Students - 'id' not present, 'semester' not present
-        if "id" not in params and "semester" not in params:
-            students = Student.objects.all()
-            serializer = StudentSerializer(students, many=True)
-            return self.response(
-                data={"count": len(serializer.data), "students": serializer.data},
-                message=STUDENT_LIST_RETRIEVED,
-            )
-
-        # Fetch only single student - 'id' present, 'semester' not present
-        if "id" in params and "semester" not in params:
-            id = params.get("id")
-            response = self.validate_int(id)
-            if response:
-                return response
+        # Fetch single student by ID
+        if has_id:
+            student_id = params.get("id")
+            error = self.validate_int(student_id)
+            if error:
+                return error
             try:
-                student = Student.objects.get(id=id)
+                student = Student.objects.get(id=student_id)
                 serializer = StudentSerializer(student)
                 return self.response(
-                    data={"student": serializer.data}, message=STUDENT_RETRIEVED
+                    data={"student": serializer.data},
+                    message=STUDENT_RETRIEVED,
                 )
             except Student.DoesNotExist:
                 return self.response(
-                    errors=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
+                    errors=STUDENT_NOT_FOUND.format(student_id),
+                    status=HTTP_404_NOT_FOUND,
                 )
 
-        # Fetch Student(s) with semester - 'id' not present, 'semester' present
-        if "semester" in params and "id" not in params:
-            id = params.get("semester")
-            response = self.validate_int(id, "semester")
-            if response:
-                return response
+        # Fetch students by semester
+        if has_semester:
+            semester_id = params.get("semester")
+            error = self.validate_int(semester_id, "semester")
+            if error:
+                return error
             try:
-                semester_serializer = SemesterSerializer(
-                    data={"id": id, "name": "string"}
-                )
-                semester_serializer.is_valid()
-                semester = Semester.objects.get(id=id)
-                students = Student.objects.filter(semester=id)
+                semester_obj = Semester.objects.get(id=semester_id)
+                students = Student.objects.filter(semester=semester_id)
                 serializer = StudentSerializer(students, many=True)
-                count = len(serializer.data)
-                semester = {"id": int(id), "name": semester.name}
-                for student in serializer.data:
-                    semester = student.pop("semester")
-                semester["count"] = count
-                semester["students"] = serializer.data
                 return self.response(
-                    data={"semester": semester},
+                    data={
+                        "semester": {
+                            "id": semester_obj.id,
+                            "name": semester_obj.name,
+                            "count": students.count(),
+                            "students": serializer.data,
+                        }
+                    },
                     message=STUDENT_LIST_RETRIEVED,
                 )
             except Semester.DoesNotExist:
-                return self.semester_not_available(semester_serializer.errors)
+                return self.response(
+                    errors=SEMESTER_NOT_FOUND,
+                    status=HTTP_404_NOT_FOUND,
+                )
+
+        # Fetch all students
+        students = Student.objects.all()
+        serializer = StudentSerializer(students, many=True)
+        return self.response(
+            data={"count": students.count(), "students": serializer.data},
+            message=STUDENT_LIST_RETRIEVED,
+        )
 
     def post(self, request):
         serializer = StudentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return self.response(
-                message=STUDENT_CREATED, data=serializer.data, status=HTTP_201_CREATED
+                message=STUDENT_CREATED,
+                data=serializer.data,
+                status=HTTP_201_CREATED,
             )
-        else:
-            return self.semester_not_available(serializer.errors)
+        return self.semester_not_available(serializer.errors)
 
     def patch(self, request):
-        id = request.data.get("id")
-        response = self.validate_int(id)
-        if response:
-            return response
+        student_id = request.data.get("id")
+        error = self.validate_int(student_id)
+        if error:
+            return error
         try:
-            student = Student.objects.get(id=id)
+            student = Student.objects.get(id=student_id)
             serializer = StudentSerializer(
                 data=request.data, instance=student, partial=True
             )
@@ -246,20 +252,20 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
             return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
         except Student.DoesNotExist:
             return self.response(
-                errors=STUDENT_NOT_FOUND.format(id), status=HTTP_404_NOT_FOUND
+                errors=STUDENT_NOT_FOUND.format(student_id),
+                status=HTTP_404_NOT_FOUND,
             )
 
     def delete(self, request):
-        data = request.data
-        serializer = DeleteStudentsSerializer(data=data)
-        if serializer.is_valid():
-            for student in serializer.data.get("students", []):
-                object = Student.objects.get(id=student)
-                object.delete()
-            return self.response(data=serializer.data, message=STUDENT_DELETED)
-        else:
+        serializer = DeleteStudentsSerializer(data=request.data)
+        if not serializer.is_valid():
             return self.response(errors=serializer.errors, status=HTTP_400_BAD_REQUEST)
 
+        student_ids = serializer.data.get("students", [])
+        # BUG FIX: filter().delete() returns a tuple (count, details), not a queryset.
+        # A single bulk delete on all IDs is correct and more efficient.
+        Student.objects.filter(id__in=student_ids).delete()
+        return self.response(data=serializer.data, message=STUDENT_DELETED)
 
 class StudentSemesterView(GenericAPIView, ResponseHelper):
     permission_classes = [IsAuthenticatedOrReadOnly]

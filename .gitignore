@@ -163,6 +163,6 @@ cython_debug/
 
 mig.ps1
 run.ps1
-perform_migartions.txt
+perform_migrations.txt
 media/
 migrations/
