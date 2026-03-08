@@ -233,7 +233,7 @@ See [requirements.txt](requirements.txt) for full list:
 - **asgiref** 3.8.0 - ASGI utilities
 - **sqlparse** 0.4.4 - SQL parsing
 
-## ⚙️ Configuration
+## Configuration
 
 ### Django Settings Overview
 
@@ -260,7 +260,7 @@ DEFAULT_AUTHENTICATION_CLASSES: JWTAuthentication
 - **Used for**: Subject icons and images
 - **Accessible via**: API endpoints and static file serving
 
-## 🛠️ Utility Scripts
+## Utility Scripts
 
 ### run.ps1
 ```powershell
@@ -274,7 +274,7 @@ Starts the Django development server.
 ```
 Runs pending database migrations.
 
-## 🔗 Integration Notes
+## Integration Notes
 
 - **CORS Enabled**: Safe for cross-origin requests from frontend applications
 - **JWT Authentication**: Stateless authentication suitable for mobile and SPA applications
