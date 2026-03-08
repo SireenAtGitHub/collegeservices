@@ -237,7 +237,7 @@ class StudentView(GenericAPIView, ResponseHelper, ValidationHelper):
         return self.semester_not_available(serializer.errors)
 
     def patch(self, request):
-        student_id = request.data.get("id")
+        student_id = request.query_params.get("id")
         error = self.validate_int(student_id)
         if error:
             return error
